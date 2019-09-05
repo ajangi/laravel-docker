@@ -1,0 +1,38 @@
+version: '3'
+services:
+  #PHP Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tech_team_up_backend
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: tech_team_up_backend
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./tech_team_up_backend/:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+  #NGINX Service
+  nginx:
+    image: nginx:alpine
+    container_name: tech_team_up_nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+    volumes:
+      - ./tech_team_up_backend:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
