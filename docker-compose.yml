@@ -5,15 +5,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tech_team_up_backend
+    container_name: backend # php service container name
     restart: unless-stopped
     tty: true
     environment:
-      SERVICE_NAME: tech_team_up_backend
+      SERVICE_NAME: ttu_backend # php service name
       SERVICE_TAGS: dev
     working_dir: /var/www
     volumes:
-      - ./tech_team_up_backend/:/var/www
+      - ./laravel_project_directory_name/:/var/www # laravel_project_directory_name (replace your's)
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - app-network
@@ -26,13 +26,36 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./tech_team_up_backend:/var/www
+      - ./laravel_project_directory_name:/var/www # laravel_project_directory_name (replace your's)
       - ./nginx/conf.d/:/etc/nginx/conf.d/
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     networks:
       - app-network
-
+  #MySql Service
+  database:
+    image: mysql:5.7
+    container_name: mysql_database # Database service container name
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ttu_db # your database name
+      MYSQL_ROOT_PASSWORD: secure_password # secure_password (replace with your's) --> mysql root password
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./dbdata:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+      - ./mysql/data:/data
+    networks:
+      - app-network
 #Docker Networks
 networks:
   app-network:
     driver: bridge
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local
